@@ -1,1 +1,95 @@
-psycopg2
+CREATE TABLE Airport (
+    iata char(3),
+    country varchar(80) not null,
+    airport_state varchar(20) not null,
+    primary key (iata)
+    );
+
+CREATE TABLE Airline (
+    code char(2),
+    airline_name varchar(20) not null,
+    country varchar(80) not null,
+    primary key (code)
+    );
+
+CREATE TABLE Flight (
+    flight_no int,
+    code char(2),
+    dept_airport char(3) not null,
+    arrival_airport char(3) not null,
+    flight_date date not null,
+    dept_time timestamp not null,
+    arrival_time timestamp not null,
+    first_class_capacity int default 0 check (first_class_capacity>-1),
+    economy_class_capacity int default 0 check (economy_class_capacity>-1),
+    primary key (flight_no),
+    foreign key (code) references Airline,
+    foreign key (dept_airport) references Airport,
+    foreign key (arrival_airport) references Airport
+    );
+
+CREATE TABLE Customer (
+    email varchar(50),
+    customer_name varchar(50) not null,
+    home_airport varchar(80),
+    primary key (email),
+    foreign key (home_airport) references Airport
+    );
+
+CREATE TABLE Customer_Address (
+    email varchar(50),
+    address varchar(50),
+    primary key (email,address),
+    foreign key (email) references Customer
+    );
+
+CREATE TABLE Address (
+    address varchar(50),
+	street varchar(40)  not null,
+	city varchar(20)  not null,
+	country varchar(80) not null,
+    customer_state varchar(20) not null,
+	building_no int not null,
+    primary key (address)
+    );
+
+CREATE TABLE Credit_Card (
+    card_no bigint,
+    address varchar(50) not null,
+    primary key (card_no),
+	foreign key (address) references Address
+    );
+
+CREATE TABLE Customer_Credit_Card (
+    email varchar(50),
+    card_no bigint,
+    primary key (email,card_no),
+    foreign key (email) references Customer,
+    foreign key (card_no) references Credit_Card
+    );
+
+CREATE TABLE Price (
+    flight_no int,
+    flight_class varchar(10),
+    Price numeric(8,2) not null,
+    primary key (flight_no,flight_class)
+    );
+
+CREATE TABLE Booking (
+    booking_no bigint,
+    email varchar(50) not null,
+    flight_no int not null,
+    flight_class varchar(10) not null,
+    card_no bigint not null,
+    primary key (booking_no),
+    foreign key (email) references Customer,
+    foreign key (flight_no,flight_class) references Price,
+    foreign key (card_no) references Credit_Card
+    );
+
+CREATE TABLE Mileage_Program (
+    email varchar(50),
+    miles int default 0 check (miles>-1),
+    primary key (email),
+    foreign key (email) references Customer
+    );
