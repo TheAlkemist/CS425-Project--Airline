@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Airfare Search and Purcahse Tool</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+</head>
+<body>
+<br><br>
+<div class = "flex-container main_options">
+    <form action = "{{ url_for('registration_page') }}" method = "post" target="_blank">
+        <button class = "btn btn-outline-primary button_options">Register</button>
+
+    </form>
+    <form>
+        <button class = "btn btn-outline-primary button_options">Log In</button>
+
+    </form>
+
+    <form>
+        <button class = "btn btn-outline-primary button_options">Log Out</button>
+
+    </form>
+
+    <form>
+        <button class = "btn btn-outline-primary button_options">Manage Account</button>
+
+    </form>
+
+    <form>
+        <button class = "btn btn-outline-primary button_options">Search/Book Flights</button>
+
+    </form>
+</div>
+
+</body>
+</html>
