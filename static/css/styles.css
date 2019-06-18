@@ -1,0 +1,35 @@
+.main_options {
+    display: flex;
+    flex-direction: column;
+    align-content: space-around;
+    text-align: center;
+    align-items: center;
+}
+
+.register_user {
+    display: flex;
+    flex-direction: column;
+    align-content: space-around;
+    text-align: left;
+    align-items: center;
+
+}
+
+.form-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: .25em;
+  }
+
+.form-row > label {
+    padding: .25em .5em .25em 0;
+  }
+
+.form-row > input {
+    flex: 1;
+}
+
+.button_options {
+    width: 200px;
+    margin-bottom: 10px;
+}
