@@ -15,17 +15,17 @@
 
 }
 
-.form-row {
+.fr {
     display: flex;
     justify-content: flex-end;
     padding: .25em;
   }
 
-.form-row > label {
+.fr > label {
     padding: .25em .5em .25em 0;
   }
 
-.form-row > input {
+.fr > input {
     flex: 1;
 }
 

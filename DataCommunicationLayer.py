@@ -23,12 +23,15 @@ class DataCommunicationLayer:
 
     def register_user(self,email,name,home_airport = None):
         cursor = self._db_conn.cursor()
+        success = True
         try:
-            values = cursor.mogrify('(%s,%s,%s)'.format(email,name,home_airport))
+            values = cursor.mogrify("(%s,%s,%s)", (email,name,home_airport)).decode('utf-8')
             cursor.execute('insert into customer values ' + values)
             self._db_conn.commit()
             self._logger.info('Successfully inserted %s into the Database.' % email)
         except Exception as e:
             self._logger.info(e)
+            success = False
         finally:
             cursor.close()
+            return success
