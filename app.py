@@ -8,7 +8,7 @@ import wtforms
 from flask import redirect, url_for
 from flask.json import dumps
 from log import setup_logging
-from DataCommunicationLayer import DataCommunicationLayer
+from DataCommunicationLayer import DataCommunicationLayer, Address
 import json
 
 app = Flask(__name__)
@@ -35,21 +35,29 @@ def registration_page():
 @app.route("/register_user",methods = ["POST"])
 def register_user():
 
+    success = False
+    msg = ''
+
     data = json.loads(request.data.decode('utf-8').replace("'", '"'))
 
-    email = data['email']
-    password = data['password']
-    name = data['name']
     home_airport = data['home_airport']
+    password = data['password']
+    password_check = data['password_check']
 
-    if email == '':
-        return 'Email cannot be blank!'
-    if name == '':
-        return 'Name cannot be blank!'
-    if home_airport == '':
-        success = comm_layer.register_user(email,password,name)
-    else:
-        success = comm_layer.register_user(email,password, name, home_airport)
+    del data['home_airport']
+    del data['password_check']
+
+    for key, value in data.items():
+        if value == '':
+            return '%s cannot be blank!' % key
+
+    if password != password_check:
+        return 'Password does not match!'
+
+    address = Address(data['building_number'],data['direction'],data['street'],data['city'],data['state'],data['country'],data['zipcode'])
+
+    success = comm_layer.register_user(data['email'],password,data['first_name'],data['last_name'],home_airport,address)
+
     return 'Successfully Added new User' if success else 'Failed to Add new User!'
 
 @login_manager.user_loader

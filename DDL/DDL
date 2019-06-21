@@ -30,7 +30,8 @@ CREATE TABLE Flight (
 
 CREATE TABLE Customer (
     email varchar(50),
-    customer_name varchar(50) not null,
+    first_name varchar(50) not null,
+    last_name varchar(50) not null,
     home_airport varchar(80),
     primary key (email),
     foreign key (home_airport) references Airport
@@ -44,18 +45,23 @@ CREATE TABLE Customer_Address (
     );
 
 CREATE TABLE Address (
-    address varchar(50),
+    address varchar(200),
+    direction varchar(2),
 	street varchar(40)  not null,
 	city varchar(20)  not null,
 	country varchar(80) not null,
     customer_state varchar(20) not null,
 	building_no int not null,
+	zipcode varchar(5) not null,
     primary key (address)
     );
 
 CREATE TABLE Credit_Card (
     card_no bigint,
     address varchar(50) not null,
+    expiration_date date not null,
+    type varchar(10) not null,
+    name_on_card varchar(80) not null,
     primary key (card_no),
 	foreign key (address) references Address
     );
