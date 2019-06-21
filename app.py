@@ -74,7 +74,7 @@ def login_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return 'Already Logged In!'
 
     data = json.loads(request.data.decode('utf-8').replace("'", '"'))
     email = data['email']
@@ -83,7 +83,6 @@ def login():
     user = comm_layer.get_user_from_db(email)
     if user is None or not user.check_password(pwd):
         return 'Invalid username or password'
-        #return redirect(url_for('login'))
     login_user(user)
     return 'Successfully Logged In!'
 
@@ -91,6 +90,12 @@ def login():
 def logout():
     logout_user()
     return 'Successfully Logged Out!'
+
+@app.route('/manage_account', methods=['POST'])
+def manage_account():
+    if not current_user.is_authenticated:
+        return 'You must be logged in to manage your account!'
+    return render_template("ManageAccount.html")
 
 if __name__ == '__main__':
     app.run(port=5000,debug=True)
