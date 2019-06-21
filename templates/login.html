@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>User Registration</title>
+    <title>User Login</title>
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/css/styles.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -21,15 +21,7 @@
             <input id = "password_reg_input" type = "password" value = "">
         </li>
         <li class="fr">
-            <label >Name </label>
-            <input id = "name_reg_input" type = "text" value = "">
-        </li>
-        <li class="fr">
-            <label >Home Airport </label>
-            <input id = "home_airport_reg_input" type = "text" value = "">
-        </li>
-        <li class="fr">
-            <button class = "btn btn-outline-primary button_options" onclick="RegisterUser()">Register User</button>
+            <button class = "btn btn-outline-primary button_options" onclick="Login()">Log In</button>
         </li>
     </ul>
 
@@ -39,17 +31,15 @@
 </div>
 <script>
 
-    function RegisterUser() {
+    function Login() {
 
             var email = document.getElementById("email_reg_input").value;
-            var name = document.getElementById("name_reg_input").value;
             var password = document.getElementById("password_reg_input").value;
-            var home_airport = document.getElementById("home_airport_reg_input").value;
 
             var callback =  $.ajax({
             type: "POST",
-            url: "/register_user",
-            data: JSON.stringify({email:email,name:name,home_airport:home_airport,password:password}),
+            url: "/login",
+            data: JSON.stringify({email:email,password:password}),
             contentType: "text/json; charset=utf-8",
             dataType: "text",
             success: function (msg) {
@@ -61,4 +51,3 @@
 </script>
 </body>
 </html>
-

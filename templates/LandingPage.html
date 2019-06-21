@@ -13,12 +13,12 @@
         <button class = "btn btn-outline-primary button_options">Register</button>
 
     </form>
-    <form>
+    <form action = "{{ url_for('login_page') }}" method = "post" target="_blank">
         <button class = "btn btn-outline-primary button_options">Log In</button>
 
     </form>
 
-    <form>
+    <form action = "{{ url_for('logout') }}" method = "post" target="_blank">
         <button class = "btn btn-outline-primary button_options">Log Out</button>
 
     </form>
