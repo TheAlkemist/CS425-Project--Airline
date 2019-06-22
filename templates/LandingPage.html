@@ -5,34 +5,59 @@
     <title>Airfare Search and Purcahse Tool</title>
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 <body>
 <br><br>
 <div class = "flex-container main_options">
+    <h2>Airfare Application</h2>
     <form action = "{{ url_for('registration_page') }}" method = "post" target="_blank">
         <button class = "btn btn-outline-primary button_options">Register</button>
 
     </form>
-    <form>
+    <form action = "{{ url_for('login_page') }}" method = "post" target="_blank">
         <button class = "btn btn-outline-primary button_options">Log In</button>
 
     </form>
 
-    <form>
-        <button class = "btn btn-outline-primary button_options">Log Out</button>
 
+        <button onclick="logout()" class= "btn btn-outline-primary button_options">Log Out</button>
+
+
+
+    <form action = "{{ url_for('manage_account') }}" method = "post" target="_blank">
+        <button onclick="landing_page()" class = "btn btn-outline-primary button_options">Manage Account</button>
     </form>
 
-    <form>
-        <button class = "btn btn-outline-primary button_options">Manage Account</button>
-
-    </form>
 
     <form>
         <button class = "btn btn-outline-primary button_options">Search/Book Flights</button>
 
     </form>
 </div>
+
+<script>
+
+    function logout() {
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/logout",
+
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+
+            alert(msg);
+          }
+      });
+    }
+
+
+
+</script>
+
 
 </body>
 </html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Login</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+<br><br>
+<div class = "flex-container register_user">
+    <ul class="cont">
+        <li class="fr">
+            <label >Email Address </label>
+            <input id = "email_reg_input" type = "text" value = "">
+        </li>
+        <li class="fr">
+            <label >Password </label>
+            <input id = "password_reg_input" type = "password" value = "">
+        </li>
+        <li class="fr">
+            <button class = "btn btn-outline-primary button_options" onclick="Login()">Log In</button>
+        </li>
+    </ul>
+
+
+
+
+</div>
+<script>
+
+    function Login() {
+
+            var email = document.getElementById("email_reg_input").value;
+            var password = document.getElementById("password_reg_input").value;
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/login",
+            data: JSON.stringify({email:email,password:password}),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+
+            alert(msg);
+          }
+      });
+    }
+</script>
+</body>
+</html>

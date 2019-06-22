@@ -27,6 +27,8 @@
 
 .fr > input {
     flex: 1;
+    max-width:50%;
+    min-width:50%;
 }
 
 .button_options {
