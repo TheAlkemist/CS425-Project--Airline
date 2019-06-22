@@ -4,7 +4,6 @@ from flask_login import current_user, login_user, LoginManager, logout_user
 from User import User
 from flask import render_template
 from flask import request
-import wtforms
 from flask import redirect, url_for
 from flask.json import dumps
 from log import setup_logging

@@ -10,7 +10,7 @@
     display: flex;
     flex-direction: column;
     align-content: space-around;
-    text-align: left;
+    text-align: center;
     align-items: center;
 
 }
