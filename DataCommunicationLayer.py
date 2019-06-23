@@ -1,6 +1,7 @@
 import psycopg2 as pg
 from werkzeug.security import generate_password_hash
 from User import User, salt
+from FlightSearch import Flight, Airport
 
 db_host = "localhost"
 database = "airfare"
@@ -35,18 +36,7 @@ class Address:
                     ,'zipcode':self.zipcode}
 
 
-class Itinerary:
-    def __init__(self,flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,
-                 first_class_capacity,economy_class_capacity):
-        self.flight_no = flight_no
-        self.code = code
-        self.dept_airport = dept_airport
-        self.arrival_airport = arrival_airport
-        self.flight_date = flight_date
-        self.dept_time = dept_time
-        self.arrival_time = arrival_time
-        self.first_class_capacity = first_class_capacity
-        self.economy_class_capacity = economy_class_capacity
+
 
 
 
@@ -492,3 +482,49 @@ class DataCommunicationLayer:
             msg = str(e)
         finally:
             return success,msg
+
+    def get_all_flights(self,flight_class,flight_date):
+        sql = """
+            select flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,price
+            from flights f
+                JOIN price pr on f.flight_no = pr.flight_no
+            where
+            pr.flight_class = %(flight_class)s
+            and pr.flight_date >= %(flight_date)s
+
+
+        """
+        cursor = self._db_conn.cursor()
+        flights = []
+        try:
+            cursor.execute(sql, {'flight_class': flight_class,'flight_date':flight_date})
+            for row in cursor:
+                flight_no = row[0]
+                code = row[1]
+                dept_airport = row[2]
+                arrival_airport = row[3]
+                dept_time = row[5]
+                arrival_time = row[6]
+                price = row[7]
+                flight = Flight(flight_no,code,dept_airport,arrival_airport,dept_time,arrival_time,price)
+                flights.append(flight)
+
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return flights
+
+    def get_network_graph(self,flight_class,flight_date):
+        flights = self.get_all_flights(flight_class,flight_date)
+        network = {}
+
+        for flight in flights:
+            if flight.frm not in network:
+                airport = Airport(flight.frm)
+                network[flight.frm] = airport
+            if flight.to not in network:
+                airport = Airport(flight.to)
+                network[flight.to] = airport
+            network[flight.frm].add_flight(flight)
+
+        return network
