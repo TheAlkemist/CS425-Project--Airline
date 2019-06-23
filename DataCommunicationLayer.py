@@ -21,6 +21,19 @@ class Address:
     def get_address_string(self):
         return '%s %s %s, %s, %s %s %s' % (str(self.building_no),self.direction,self.street,self.city,self.state,self.country,self.zipcode)
 
+    def list(self):
+        return [self.building_no,self.direction,self.street,self.city,self.state,self.country,self.zipcode]
+
+    def dictionary(self):
+        return {'address':self.get_address_string()
+                   ,'building_no':self.building_no
+                   ,'direction':self.direction
+                   ,'street':self.street
+                   ,'city':self.city
+                   ,'state':self.state
+                   ,'country':self.country
+                    ,'zipcode':self.zipcode}
+
 class DataCommunicationLayer:
 
     def __init__(self,logger):
@@ -97,3 +110,148 @@ class DataCommunicationLayer:
             return None
         else:
             return User(id,rows[0][1])
+
+    def get_addresses_for_user(self,user_id):
+        cursor = self._db_conn.cursor()
+        sql = """select *
+                from address ad
+                JOIN customer_address ca
+                    ON ad.address = ca.address
+                where ca.email = %(user_id)s"""
+        addresses = []
+        try:
+            cursor.execute(sql, {'user_id': user_id})
+            for row in cursor:
+                building_no = row[6]
+                direction = row[1]
+                street = row[2]
+                city = row[3]
+                state = row[5]
+                country = row[4]
+                zipcode = row[7]
+
+                address = Address(building_no,direction, street,city, state,country,zipcode)
+                addresses.append(address)
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return addresses
+
+    def is_address_assoc_with_cc(self,user_id,address):
+        cursor = self._db_conn.cursor()
+        sql = """
+            select *
+            from credit_card cc
+            JOIN customer_credit_card ccc
+	            ON cc.card_no = cc.card_no
+            where address = %(address)s
+            and email = %(email)s
+        """
+        try:
+            cursor.execute(sql, {'address': address.get_address_string(),'email': user_id})
+            for row in cursor:
+                return True
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return False
+
+    def is_address_assoc_with_customer(self, address):
+        cursor = self._db_conn.cursor()
+        sql = """
+            select *
+            from customer_address ad
+            where address = %(address)s
+
+        """
+        try:
+            cursor.execute(sql, {'address': address.get_address_string()})
+            for row in cursor:
+                return True
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return False
+
+    def is_customers_only_address(self,user_id,address):
+        cursor = self._db_conn.cursor()
+        sql = """
+                    select *
+                    from customer_address ad
+                    where address != %(address)s
+                    and email = %(email)s
+                """
+        try:
+            cursor.execute(sql, {'address': address.get_address_string(), 'email': user_id})
+            for row in cursor:
+                return False
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return True
+
+    def remove_address(self,user_id,address):
+        success = True
+        msg = "Success"
+        cursor = self._db_conn.cursor()
+
+        if self.is_address_assoc_with_cc(user_id,address):
+            return False,'Cannot remove a billing address!'
+
+        if self.is_customers_only_address(user_id,address):
+            return False, 'Customer must have at least one address!'
+
+        sql1 = """delete from customer_address
+                where address = %(address)s
+                    and email = %(email)s"""
+
+        sql2 = """delete from address
+                        where address = %(address)s"""
+
+
+        try:
+            cursor.execute(sql1, {'email': user_id,'address': address.get_address_string()})
+            if not self.is_address_assoc_with_customer(address):
+                cursor.execute(sql2, { 'address': address.get_address_string()})
+            self._db_conn.commit()
+        except Exception as e:
+            self._logger.error(e)
+            msg = str(e)
+            success = False
+        finally:
+            return success,msg
+
+    def modify_address(self,address,old_address_id):
+        cursor = self._db_conn.cursor()
+        success = True
+        msg = "Success"
+
+
+        sql = """update address
+                set building_no = %(building_no)s,
+                direction = %(direction)s,
+                street = %(street)s,
+                city = %(city)s,
+                customer_state = %(customer_state)s,
+                country = %(country)s,
+                zipcode = %(zipcode)s
+                where address = %(address)s
+                    """
+
+        try:
+            cursor.execute(sql, {'building_no': address.building_no,
+                                 'direction': address.direction,
+                                 'street': address.street,
+                                 'city': address.city,
+                                 'customer_state': address.state,
+                                 'country': address.country,
+                                 'zipcode': address.zipcode,
+                                 'address': old_address_id
+                                 })
+            self._db_conn.commit()
+        except Exception as e:
+            self._logger.error(e)
+            success = False
+            msg = str(e)
+        finally:
+            return success,msg

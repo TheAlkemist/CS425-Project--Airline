@@ -96,6 +96,57 @@ def manage_account():
         return 'You must be logged in to manage your account!'
     return render_template("ManageAccount.html")
 
+@app.route('/get_addresses', methods=['GET'])
+def user_addresses():
+    if not current_user.is_authenticated:
+        return
+
+    addresses = comm_layer.get_addresses_for_user(current_user.get_id())
+
+    tmp = {}
+    for a in addresses:
+        tmp[a.get_address_string()] = a.dictionary()
+
+    return json.dumps(tmp)
+
+@app.route('/add_address', methods=['POST'])
+def add_address():
+    if not current_user.is_authenticated:
+        return 'Must Be logged in the add an address!'
+    data = json.loads(request.data.decode('utf-8').replace("'", '"'))
+
+    for key, value in data.items():
+        if value == '':
+            return '%s cannot be blank!' % key
+
+    address = Address(data['building_number'], data['direction'], data['street'], data['city'], data['state'],
+                      data['country'], data['zipcode'])
+
+
+
+    success = comm_layer.add_address(current_user.get_id(),address)
+
+    if success:
+        return "Address added successfully!"
+    else:
+        return 'Failed to Add Address'
+
+@app.route('/modify_address', methods=['POST'])
+def modify_address():
+    if not current_user.is_authenticated:
+        return 'Must Be logged in the add an address!'
+
+    data = json.loads(request.data.decode('utf-8').replace("'", '"'))
+    address = Address(data['building_number'], data['direction'], data['street'], data['city'], data['state'],
+                      data['country'], data['zipcode'])
+    old_address_id = data['old_address']
+    success,msg = comm_layer.modify_address( address,old_address_id)
+
+    if success:
+        return "Address modified successfully!"
+    else:
+        return msg
+
 if __name__ == '__main__':
     app.run(port=5000,debug=True)
 
