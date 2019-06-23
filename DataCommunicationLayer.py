@@ -34,6 +34,21 @@ class Address:
                    ,'country':self.country
                     ,'zipcode':self.zipcode}
 
+class CreditCard:
+    def __init__(self,card_no,address, exp_date,type, name_on_card):
+        self.card_no = card_no
+        self.address = address
+        self.exp_date = exp_date
+        self.type = type
+        self.name_on_card = name_on_card
+
+    def dictionary(self):
+        return {'card_no':self.card_no
+                   ,'address':self.address
+                   ,'exp_date':self.exp_date.strftime('%Y-%m-%d')
+                   ,'type':self.type
+                   ,'name_on_card':self.name_on_card}
+
 class DataCommunicationLayer:
 
     def __init__(self,logger):
@@ -91,10 +106,40 @@ class DataCommunicationLayer:
             cursor.close()
             return success
 
+    def add_cc(self,email,credit_card):
+        success = True
+        cursor = self._db_conn.cursor()
+        try:
+            assert isinstance(credit_card,CreditCard)
+            if not self.check_cc(credit_card.card_no):
+                values = cursor.mogrify("(%s,%s,%s,%s,%s)", (credit_card.card_no, credit_card.address, credit_card.exp_date, credit_card.type,credit_card.name_on_card)).decode('utf-8')
+                cursor.execute('insert into credit_card values ' + values)
+            values = cursor.mogrify("(%s,%s)", (email,credit_card.card_no)).decode('utf-8')
+            cursor.execute('insert into customer_credit_card values ' + values)
+            self._db_conn.commit()
+            self._logger.info('Successfully inserted credit_card %s for email %s into the Database.' % (credit_card.card_no,email))
+        except Exception as e:
+            self._logger.error(e)
+            self._db_conn.rollback()
+            success = False
+        finally:
+            cursor.close()
+            return success
+
     def check_address(self,address_string):
         cursor = self._db_conn.cursor()
         sql = 'select * from Address where address = %(address)s'
         cursor.execute(sql, {'address': address_string})
+        rows = cursor.fetchall()
+        if len(rows) == 0:
+            return False
+        else:
+            return True
+
+    def check_cc(self,card_no):
+        cursor = self._db_conn.cursor()
+        sql = 'select * from credit_card where card_no = %(card_no)s'
+        cursor.execute(sql, {'card_no': card_no})
         rows = cursor.fetchall()
         if len(rows) == 0:
             return False
@@ -130,12 +175,38 @@ class DataCommunicationLayer:
                 country = row[4]
                 zipcode = row[7]
 
+
                 address = Address(building_no,direction, street,city, state,country,zipcode)
                 addresses.append(address)
         except Exception as e:
             self._logger.error(e)
         finally:
             return addresses
+
+    def get_credit_cards_for_user(self,user_id):
+        cursor = self._db_conn.cursor()
+        sql = """select *
+                from credit_card cc
+                JOIN customer_credit_card ccc
+                    ON cc.card_no = ccc.card_no
+                where ccc.email = %(user_id)s"""
+        cards = []
+        try:
+            cursor.execute(sql, {'user_id': user_id})
+            for row in cursor:
+                card_no = row[6]
+                address = row[1]
+                exp_date = row[2]
+                type = row[3]
+                name_on_card = row[5]
+
+                card = CreditCard(card_no,address, exp_date,type, name_on_card)
+                cards.append(card)
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return cards
+
 
     def is_address_assoc_with_cc(self,user_id,address_id):
         cursor = self._db_conn.cursor()
@@ -167,6 +238,24 @@ class DataCommunicationLayer:
         """
         try:
             cursor.execute(sql, {'address': address_id})
+            for row in cursor:
+                tmp = True
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return tmp
+
+    def is_cc_assoc_with_customer(self, card_no):
+        tmp = False
+        cursor = self._db_conn.cursor()
+        sql = """
+            select *
+            from customer_credit_card ad
+            where card_no = %(card_no)s
+
+        """
+        try:
+            cursor.execute(sql, {'card_no': card_no})
             for row in cursor:
                 tmp = True
         except Exception as e:
@@ -224,6 +313,32 @@ class DataCommunicationLayer:
         finally:
             return success,msg
 
+
+    def remove_cc(self,user_id,card_no):
+        success = True
+        msg = "Success"
+        cursor = self._db_conn.cursor()
+
+        sql1 = """delete from customer_credit_card
+                where card_no = %(card_no)s
+                    and email = %(email)s"""
+
+        sql2 = """delete from credit_card
+                        where card_no = %(card_no)s"""
+
+
+        try:
+            cursor.execute(sql1, {'email': user_id,'card_no': card_no})
+            if not self.is_cc_assoc_with_customer(card_no):
+                cursor.execute(sql2, { 'card_no': card_no})
+            self._db_conn.commit()
+        except Exception as e:
+            self._logger.error(e)
+            msg = str(e)
+            success = False
+        finally:
+            return success,msg
+
     def address_exists(self,address_id):
         cursor = self._db_conn.cursor()
         sql = """
@@ -258,6 +373,49 @@ class DataCommunicationLayer:
             self.remove_address(user_id,old_address_id)
             if not self.is_address_assoc_with_customer(old_address_id):
                 cursor.execute(sql2, { 'address': old_address_id})
+            self.update_cards(user_id,old_address_id,address.get_address_string())
+            self._db_conn.commit()
+        except Exception as e:
+            self._logger.error(e)
+            success = False
+            msg = str(e)
+        finally:
+            return success,msg
+
+    def update_cards(self,user_id,old_address_id,new_address_id):
+        cursor = self._db_conn.cursor()
+        success = True
+        msg = "Success"
+
+        sql = """update credit_card
+                            set address = %(new_address_id)s
+                            where card_no in (select card_no from customer_credit_card where email = %(user_id)s
+                            and address = %(old_address_id)s"""
+
+        try:
+            cursor.execute(sql, {'old_address_id': old_address_id,'user_id': user_id, 'new_address': new_address_id})
+
+            self._db_conn.commit()
+        except Exception as e:
+            self._logger.error(e)
+            success = False
+            msg = str(e)
+        finally:
+            return success, msg
+
+    def modify_credit_card(self,card_no,new_address):
+        cursor = self._db_conn.cursor()
+        success = True
+        msg = "Success"
+
+        sql = """update credit_card
+                    set address = %(new_address)s
+
+                    where card_no = %(card_no)s
+                    """
+
+        try:
+            cursor.execute(sql, {'card_no': card_no,'new_address':new_address})
 
             self._db_conn.commit()
         except Exception as e:
