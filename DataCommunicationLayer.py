@@ -126,8 +126,42 @@ class DataCommunicationLayer:
         else:
             return User(id,rows[0][1])
 
-    def searchFlight(self, dep_airport,des_airport,dep_flight_date):
-        query = ""
+    def search_flight(self, dep_airport,des_airport,dep_flight_date,connections = None ,max_time = None, price = None):
+        cursor = self._db_conn.cursor()
+        query = """WITH RECURSIVE ITINERARY(flight_code,dep,dest,connects,price,flight_time,arrival) AS (
+                   SELECT flight_date::text || code || flight_no::text AS flight_code,
+                   dept_airport,
+                   arrival_airport,
+                   0 AS connects,
+                   {} AS price,
+                   (arrival_time-dept_time) AS flight_time,
+                   arrival_time
+                   FROM flight f0
+                   WHERE dept_airport = %s AND flight_date = %s
+                   UNION ALL
+                   SELECT con.flight_code || '/' || f1.flight_date::text || f1.code || f1.flight_number::text  as flight
+                   ,con.dep
+                   ,f1.arrival_airport
+                   ,con.connects + 1 AS connects
+                   ,con.price + f1.{} AS price
+                   ,(con.flight_time + f1.arrival_time - f1.dept_time)) AS total_flight_time
+                   ,f1.arrival_time
+                   FROM ITINERARY con
+                    JOIN flight f1
+                    on f1.dept_airport = con.dest AND flight_date = %s
+                    AND f1.dept_time > con.arrival
+                    )
+                    SELECT *
+                    FROM connections
+                    WHERE dest = %s"""
+        try:
+            cursor.execute(query, (dep_airport, des_airport, dep_flight_date, connections,max_time,price ))
+            flights = cursor.fetchall()
+            flights = [x for x in flights if x[3] <= float(connections) and float(x[4]) <= float(price) and (x[5].seconds <= float(max_time)*3600)]
+            if len(flights) == 0:
+                print("No flights found for given parameters.")
+        except Exception as error:
+                print(error)
 
     def get_addresses_for_user(self,user_id):
         cursor = self._db_conn.cursor()
