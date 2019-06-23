@@ -158,10 +158,23 @@ class DataCommunicationLayer:
             cursor.execute(query, (dep_airport, des_airport, dep_flight_date, connections,max_time,price ))
             flights = cursor.fetchall()
             flights = [x for x in flights if x[3] <= float(connections) and float(x[4]) <= float(price) and (x[5].seconds <= float(max_time)*3600)]
-            if len(flights) == 0:
-                print("No flights found for given parameters.")
+
         except Exception as error:
-                print(error)
+                self.logger.error(error)
+
+        if len(flights) == 0:
+            self._logger.info("No flights found for given parameters.")
+            return False
+
+        self._logger.info("""\nDisplaying flight options in the following format:
+        [i]: <# of connections>, $<airfare>, <total airtime> hrs 
+        """)
+
+        i, j = 0, 0
+        for itin in flights:
+            self._logger.info("        [{}]: {}, ${}, {:.3g} hrs".format(i, itin[3], float(itin[4]), (itin[5].seconds)/3600))
+            i +=1
+        return True
 
     def get_addresses_for_user(self,user_id):
         cursor = self._db_conn.cursor()
