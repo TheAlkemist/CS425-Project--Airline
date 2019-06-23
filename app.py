@@ -96,6 +96,10 @@ def manage_account():
         return 'You must be logged in to manage your account!'
     return render_template("ManageAccount.html")
 
+@app.route('/flights', methods=['POST'])
+def flights():
+    return render_template("Flights.html")
+
 @app.route('/get_addresses', methods=['GET'])
 def user_addresses():
     if not current_user.is_authenticated:

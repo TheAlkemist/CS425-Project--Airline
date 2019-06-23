@@ -209,23 +209,25 @@ class DataCommunicationLayer:
 
 
     def is_address_assoc_with_cc(self,user_id,address_id):
+        tmp = False
         cursor = self._db_conn.cursor()
         sql = """
             select *
             from credit_card cc
             JOIN customer_credit_card ccc
-	            ON cc.card_no = cc.card_no
+	            ON cc.card_no = ccc.card_no
             where address = %(address)s
             and email = %(email)s
         """
+        print(cursor.mogrify(sql, {'address': address_id,'email': user_id}))
         try:
             cursor.execute(sql, {'address': address_id,'email': user_id})
             for row in cursor:
-                return True
+                tmp = True
         except Exception as e:
             self._logger.error(e)
         finally:
-            return False
+            return tmp
 
     def is_address_assoc_with_customer(self, address_id):
         tmp = False
