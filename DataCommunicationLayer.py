@@ -21,6 +21,21 @@ class Address:
     def get_address_string(self):
         return '%s %s %s, %s, %s %s %s' % (str(self.building_no),self.direction,self.street,self.city,self.state,self.country,self.zipcode)
 
+
+class Itinerary:
+    def __init__(self,flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,
+                 first_class_capacity,economy_class_capacity):
+        self.flight_no = flight_no
+        self.code = code
+        self.dept_airport = dept_airport
+        self.arrival_airport = arrival_airport
+        self.flight_date = flight_date
+        self.dept_time = dept_time
+        self.arrival_time = arrival_time
+        self.first_class_capacity = first_class_capacity
+        self.economy_class_capacity = economy_class_capacity
+
+
 class DataCommunicationLayer:
 
     def __init__(self,logger):
@@ -97,3 +112,6 @@ class DataCommunicationLayer:
             return None
         else:
             return User(id,rows[0][1])
+
+    def searchFlight(self, dep_airport,des_airport,dep_flight_date):
+        query = ""

@@ -131,17 +131,25 @@ def address_modify(user):
             for addr in addresses:
         print("[{}]: {}, {}, {}, {}, {}".format(i, addr[1], addr[2], addr[3], addr[4], addr[5]))
 
-def booking_modify(user):
-    print("Your bookings are displayed below")
-    cursor.execute("SELECT * FROM booking where user = %s",(user[0],))
-    booking = cursor.fetchall()
-    for booking in bookings:
-        cursor.excecute("SELECT flight.flight_no, flight.code, flight.dept_airport, flight.arrival_airport, flight.flight_date, flight.dept_time, flight.arrival_time",(booking[0],))
-        flights= cursor.fetchall()
-        for flight in flights:
-            print("\t" + str(flight[0]) +" " + str(flight[1]) + " on " + str(flight[2]))
-            print("\t\tTakeoff at " + str(flight[5]) + " from " + flight[3])
-            print("\t\tLanding at " + str(flight[6]) + " at " + flight[4])
+def display_booking(user):
+    self._logger.info("Your bookings are displayed below")
+    try:
+        cursor.execute("SELECT * FROM booking where user = %s",(user[0],))
+        bookings = cursor.fetchall()
+        for booking in bookings:
+            sql = "SELECT flight.flight_no, flight.code, flight.dept_airport, flight.arrival_airport, flight.flight_date, flight.dept_time, flight.arrival_time FROM booking NATURAL JOIN flight WHERE booking_no = %s "
+            cursor.excecute(sql,(booking[0],))
+            flights= cursor.fetchall()
+            for flight in flights:
+                print("\t" + str(flight[1]) +" " + str(flight[0]) + " on " + str(flight[4]))
+                print("\t\tTakeoff at " + str(flight[5]) + " from " + flight[2])
+                print("\t\tLanding at " + str(flight[6]) + " at " + flight[3])
+
+    except Exception as e:
+            self._logger.info('Failed to Find Bookings!')
+            self._logger.error(e)
+            Exception('Failed to Find Bookings!')
+
 
 def card_modify(user):
     cursor.excecute("SELECT card_no FROM Credit_Card WHERE user ")
