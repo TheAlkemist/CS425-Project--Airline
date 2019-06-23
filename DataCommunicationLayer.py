@@ -137,7 +137,7 @@ class DataCommunicationLayer:
         finally:
             return addresses
 
-    def is_address_assoc_with_cc(self,user_id,address):
+    def is_address_assoc_with_cc(self,user_id,address_id):
         cursor = self._db_conn.cursor()
         sql = """
             select *
@@ -148,7 +148,7 @@ class DataCommunicationLayer:
             and email = %(email)s
         """
         try:
-            cursor.execute(sql, {'address': address.get_address_string(),'email': user_id})
+            cursor.execute(sql, {'address': address_id,'email': user_id})
             for row in cursor:
                 return True
         except Exception as e:
@@ -156,7 +156,8 @@ class DataCommunicationLayer:
         finally:
             return False
 
-    def is_address_assoc_with_customer(self, address):
+    def is_address_assoc_with_customer(self, address_id):
+        tmp = False
         cursor = self._db_conn.cursor()
         sql = """
             select *
@@ -165,40 +166,42 @@ class DataCommunicationLayer:
 
         """
         try:
-            cursor.execute(sql, {'address': address.get_address_string()})
+            cursor.execute(sql, {'address': address_id})
             for row in cursor:
-                return True
+                tmp = True
         except Exception as e:
             self._logger.error(e)
         finally:
-            return False
+            return tmp
 
-    def is_customers_only_address(self,user_id,address):
+    def is_customers_only_address(self,user_id,address_id):
         cursor = self._db_conn.cursor()
+        tmp = True
         sql = """
                     select *
                     from customer_address ad
                     where address != %(address)s
                     and email = %(email)s
                 """
+
         try:
-            cursor.execute(sql, {'address': address.get_address_string(), 'email': user_id})
+            cursor.execute(sql, {'address': address_id, 'email': user_id})
             for row in cursor:
-                return False
+                tmp = False
         except Exception as e:
             self._logger.error(e)
         finally:
-            return True
+            return tmp
 
-    def remove_address(self,user_id,address):
+    def remove_address(self,user_id,address_id):
         success = True
         msg = "Success"
         cursor = self._db_conn.cursor()
 
-        if self.is_address_assoc_with_cc(user_id,address):
+        if self.is_address_assoc_with_cc(user_id,address_id):
             return False,'Cannot remove a billing address!'
 
-        if self.is_customers_only_address(user_id,address):
+        if self.is_customers_only_address(user_id,address_id):
             return False, 'Customer must have at least one address!'
 
         sql1 = """delete from customer_address
@@ -210,9 +213,9 @@ class DataCommunicationLayer:
 
 
         try:
-            cursor.execute(sql1, {'email': user_id,'address': address.get_address_string()})
-            if not self.is_address_assoc_with_customer(address):
-                cursor.execute(sql2, { 'address': address.get_address_string()})
+            cursor.execute(sql1, {'email': user_id,'address': address_id})
+            if not self.is_address_assoc_with_customer(address_id):
+                cursor.execute(sql2, { 'address': address_id})
             self._db_conn.commit()
         except Exception as e:
             self._logger.error(e)
@@ -221,33 +224,41 @@ class DataCommunicationLayer:
         finally:
             return success,msg
 
-    def modify_address(self,address,old_address_id):
+    def address_exists(self,address_id):
+        cursor = self._db_conn.cursor()
+        sql = """
+                            select *
+                            from address ad
+                            where address = %(address)s
+                        """
+        try:
+            cursor.execute(sql, {'address': address_id})
+            for row in cursor:
+                return True
+        except Exception as e:
+            self._logger.error(e)
+        finally:
+            return False
+
+
+    def modify_address(self,user_id,address,old_address_id):
         cursor = self._db_conn.cursor()
         success = True
         msg = "Success"
 
 
-        sql = """update address
-                set building_no = %(building_no)s,
-                direction = %(direction)s,
-                street = %(street)s,
-                city = %(city)s,
-                customer_state = %(customer_state)s,
-                country = %(country)s,
-                zipcode = %(zipcode)s
-                where address = %(address)s
-                    """
+        sql2 = """delete from address
+                                where address = %(address)s"""
 
         try:
-            cursor.execute(sql, {'building_no': address.building_no,
-                                 'direction': address.direction,
-                                 'street': address.street,
-                                 'city': address.city,
-                                 'customer_state': address.state,
-                                 'country': address.country,
-                                 'zipcode': address.zipcode,
-                                 'address': old_address_id
-                                 })
+            if not self.address_exists(address.get_address_string()):
+                self.add_address(user_id,address)
+
+
+            self.remove_address(user_id,old_address_id)
+            if not self.is_address_assoc_with_customer(old_address_id):
+                cursor.execute(sql2, { 'address': old_address_id})
+
             self._db_conn.commit()
         except Exception as e:
             self._logger.error(e)
