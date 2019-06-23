@@ -21,6 +21,19 @@ class Address:
     def get_address_string(self):
         return '%s %s %s, %s, %s %s %s' % (str(self.building_no),self.direction,self.street,self.city,self.state,self.country,self.zipcode)
 
+    def list(self):
+        return [self.building_no,self.direction,self.street,self.city,self.state,self.country,self.zipcode]
+
+    def dictionary(self):
+        return {'address':self.get_address_string()
+                   ,'building_no':self.building_no
+                   ,'direction':self.direction
+                   ,'street':self.street
+                   ,'city':self.city
+                   ,'state':self.state
+                   ,'country':self.country
+                    ,'zipcode':self.zipcode}
+
 
 class Itinerary:
     def __init__(self,flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,
@@ -36,18 +49,6 @@ class Itinerary:
         self.economy_class_capacity = economy_class_capacity
 
 
-    def list(self):
-        return [self.building_no,self.direction,self.street,self.city,self.state,self.country,self.zipcode]
-
-    def dictionary(self):
-        return {'address':self.get_address_string()
-                   ,'building_no':self.building_no
-                   ,'direction':self.direction
-                   ,'street':self.street
-                   ,'city':self.city
-                   ,'state':self.state
-                   ,'country':self.country
-                    ,'zipcode':self.zipcode}
 
 class CreditCard:
     def __init__(self,card_no,address, exp_date,type, name_on_card):
