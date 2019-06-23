@@ -2,22 +2,239 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Account Management</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 <body>
 
 
 
 <br><br>
-<div class = "flex-container register_user">
-<select name="sometext" multiple="multiple">
-    <option>text1</option>
-    <option>text2</option>
-    <option>text3</option>
-    <option>text4</option>
-    <option>text5</option>
- </select>
+<div class = "flex-container manage_account">
+
+    <div class = "column">
+        <h2>Addresses</h2>
+                <select size = "5" id = "address_box" onchange="address_box_click()">
+                    <option>text1</option>
+                    <option>text2</option>
+                    <option>text3</option>
+                    <option>text4</option>
+                    <option>text5</option>
+                </select>
+        <ul>
+            <li class="fr">
+                <label >Building No  </label>
+                <input id = "bn_reg_input" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Direction     </label>
+                <input id = "direction_reg_input" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Street Name      </label>
+                <input id = "street_reg_input" type = "text" value = "">
+            </li>
+
+            <li class="fr">
+                <label >City   </label>
+                <input id = "city_reg_input" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >State       </label>
+                <input id = "state_input" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >State       </label>
+                <input id = "country_input" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Zip Code</label>
+                <input id = "zip_input_check" type = "text" value = "">
+            </li>
+        </ul>
+
+        <button class = "btn btn-outline-primary button_options" onclick="AddAddress()">Add</button>
+        <button class = "btn btn-outline-primary button_options" onclick="RemoveAddress()">Remove</button>
+        <button class = "btn btn-outline-primary button_options" onclick="ModifyAddress()">Modify</button>
+    </div>
+    <div class = "column">
+        <h2>Credit Cards</h2>
+                <select size = "5">
+                    <option>text1</option>
+                    <option>text2</option>
+                    <option>text3</option>
+                    <option>text4</option>
+                    <option>text5</option>
+                </select>
+        <ul>
+            <li class="fr">
+                <label >Card Number</label>
+                <input id = "cc_number" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Card Number</label>
+                <input id = "cc_address" type = "text" value = "">
+            </li>
+        </ul>
+
+        <button class = "btn btn-outline-primary button_options" onclick="AddCC()">Add</button>
+        <button class = "btn btn-outline-primary button_options" onclick="RemoveCC()">Remove</button>
+        <button class = "btn btn-outline-primary button_options" onclick="ModifyCC()">Modify</button>
+    </div>
 </div>
+
+
+<script>
+
+    jQuery.getJSON('/get_addresses',populate_addresses);
+
+    var addresses = {};
+
+
+
+    function populate_addresses(data) {
+          console.log(data);
+        addresses = data;
+        abox = document.getElementById("address_box");
+        abox.innerHTML = "";
+
+        for(var i in data) {
+            address = data[i]
+            opt = document.createElement("option");
+            abox.appendChild(opt);
+            opt.innerHTML = address['address'];
+        }
+
+    }
+
+    function address_box_click(){
+        abox = document.getElementById("address_box");
+        selection = abox.selectedOptions[0].value;
+
+        address = addresses[selection];
+
+        ip = document.getElementById("bn_reg_input");
+        ip.value = address.building_no;
+
+        ip = document.getElementById("direction_reg_input");
+        ip.value = address.direction;
+
+        ip = document.getElementById("street_reg_input");
+        ip.value = address.street;
+
+        ip = document.getElementById("city_reg_input");
+        ip.value = address.city;
+
+        ip = document.getElementById("state_input");
+        ip.value = address.state;
+
+        ip = document.getElementById("country_input");
+        ip.value = address.country;
+
+        ip = document.getElementById("zip_input_check");
+        ip.value = address.zipcode;
+    }
+
+     function AddAddress() {
+
+
+            var bn = document.getElementById("bn_reg_input").value;
+            var direction = document.getElementById("direction_reg_input").value;
+            var street = document.getElementById("street_reg_input").value;
+            var city = document.getElementById("city_reg_input").value;
+            var state = document.getElementById("state_input").value;
+            var country = document.getElementById("country_input").value;
+            var zipcode = document.getElementById("zip_input_check").value;
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/add_address",
+            data: JSON.stringify({
+                                building_number:bn,
+                                direction:direction,
+                                street:street,
+                                city:city,
+                                state:state,
+                                country:country,
+                                zipcode:zipcode}),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+                jQuery.getJSON('/get_addresses',populate_addresses);
+            alert(msg);
+          }
+      });
+    }
+
+    function RemoveAddress() {
+            abox = document.getElementById("address_box");
+            selection = abox.selectedOptions[0].value;
+            address = addresses[selection];
+            var bn = address.building_no;
+            var direction = address.direction;
+            var street = address.street;
+            var city = address.city;
+            var state = address.state;
+            var country = address.country;
+            var zipcode = address.zipcode;
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/remove_address",
+            data: JSON.stringify({
+                                building_number:bn,
+                                direction:direction,
+                                street:street,
+                                city:city,
+                                state:state,
+                                country:country,
+                                zipcode:zipcode}),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+                jQuery.getJSON('/get_addresses',populate_addresses);
+            alert(msg);
+          }
+      });
+
+    }
+
+    function ModifyAddress() {
+
+            abox = document.getElementById("address_box");
+            selection = abox.selectedOptions[0].value;
+            var bn = document.getElementById("bn_reg_input").value;
+            var direction = document.getElementById("direction_reg_input").value;
+            var street = document.getElementById("street_reg_input").value;
+            var city = document.getElementById("city_reg_input").value;
+            var state = document.getElementById("state_input").value;
+            var country = document.getElementById("country_input").value;
+            var zipcode = document.getElementById("zip_input_check").value;
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/modify_address",
+            data: JSON.stringify({
+                                building_number:bn,
+                                direction:direction,
+                                street:street,
+                                city:city,
+                                state:state,
+                                country:country,
+                                zipcode:zipcode,
+                                old_address:selection}),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+                jQuery.getJSON('/get_addresses',populate_addresses);
+            alert(msg);
+          }
+      });
+    }
+</script>
 
 </body>
 </html>

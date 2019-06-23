@@ -4,13 +4,23 @@
     align-content: space-around;
     text-align: center;
     align-items: center;
+    justify-content: center;
+}
+
+.manage_account {
+    display: flex;
+    flex-direction: row;
+    align-content: space-around;
+    text-align: center;
+    align-items: bottom;
+    justify-content: center;
 }
 
 .register_user {
     display: flex;
     flex-direction: column;
     align-content: space-around;
-    text-align: left;
+    text-align: center;
     align-items: center;
 
 }

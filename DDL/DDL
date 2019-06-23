@@ -99,3 +99,10 @@ CREATE TABLE Mileage_Program (
     primary key (email),
     foreign key (email) references Customer
     );
+
+CREATE TABLE public.registered_user
+(
+    email character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(256) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT registered_user_pkey PRIMARY KEY (email)
+);
