@@ -18,11 +18,7 @@
     <div class = "column">
         <h2>Addresses</h2>
                 <select size = "5" id = "address_box" onchange="address_box_click()">
-                    <option>text1</option>
-                    <option>text2</option>
-                    <option>text3</option>
-                    <option>text4</option>
-                    <option>text5</option>
+
                 </select>
         <ul>
             <li class="fr">
@@ -47,7 +43,7 @@
                 <input id = "state_input" type = "text" value = "">
             </li>
             <li class="fr">
-                <label >State       </label>
+                <label >Country       </label>
                 <input id = "country_input" type = "text" value = "">
             </li>
             <li class="fr">
@@ -62,12 +58,8 @@
     </div>
     <div class = "column">
         <h2>Credit Cards</h2>
-                <select size = "5">
-                    <option>text1</option>
-                    <option>text2</option>
-                    <option>text3</option>
-                    <option>text4</option>
-                    <option>text5</option>
+                <select size = "5" id = "card_box" onchange="card_box_click()">
+
                 </select>
         <ul>
             <li class="fr">
@@ -75,14 +67,26 @@
                 <input id = "cc_number" type = "text" value = "">
             </li>
             <li class="fr">
-                <label >Card Number</label>
+                <label >Name on Card</label>
+                <input id = "cc_name" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Expiration Date</label>
+                <input id = "cc_exp" type = "date" value = "">
+            </li>
+            <li class="fr">
+                <label >Type</label>
+                <input id = "cc_type" type = "text" value = "">
+            </li>
+            <li class="fr">
+                <label >Payment Address</label>
                 <input id = "cc_address" type = "text" value = "">
             </li>
         </ul>
 
-        <button class = "btn btn-outline-primary button_options" onclick="AddCC()">Add</button>
-        <button class = "btn btn-outline-primary button_options" onclick="RemoveCC()">Remove</button>
-        <button class = "btn btn-outline-primary button_options" onclick="ModifyCC()">Modify</button>
+        <button class = "btn btn-outline-primary button_options" onclick="AddCard()">Add</button>
+        <button class = "btn btn-outline-primary button_options" onclick="RemoveCard()">Remove</button>
+        <button class = "btn btn-outline-primary button_options" onclick="ModifyCard()">Modify</button>
     </div>
 </div>
 
@@ -90,8 +94,10 @@
 <script>
 
     jQuery.getJSON('/get_addresses',populate_addresses);
+    jQuery.getJSON('/get_credit_cards',populate_credit_cards);
 
     var addresses = {};
+    var cards = {};
 
 
 
@@ -106,6 +112,21 @@
             opt = document.createElement("option");
             abox.appendChild(opt);
             opt.innerHTML = address['address'];
+        }
+
+    }
+
+    function populate_credit_cards(data) {
+          console.log(data);
+        cards = data;
+        cbox = document.getElementById("card_box");
+        cbox.innerHTML = "";
+
+        for(var i in data) {
+            card = data[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = card['card_no'];
         }
 
     }
@@ -136,6 +157,29 @@
 
         ip = document.getElementById("zip_input_check");
         ip.value = address.zipcode;
+    }
+
+    function card_box_click(){
+        cbox = document.getElementById("card_box");
+        selection = cbox.selectedOptions[0].value;
+
+        card = cards[selection];
+
+        ip = document.getElementById("cc_number");
+        ip.value = card.card_no;
+
+        ip = document.getElementById("cc_name");
+        ip.value = card.name_on_card;
+
+        ip = document.getElementById("cc_exp");
+        ip.value = card.exp_date;
+
+        ip = document.getElementById("cc_type");
+        ip.value = card.type;
+
+        ip = document.getElementById("cc_address");
+        ip.value = card.address;
+
     }
 
      function AddAddress() {
@@ -169,33 +213,79 @@
       });
     }
 
+    function AddCard() {
+            abox = document.getElementById("address_box");
+
+            if (abox.selectedOptions.length === 0) {
+                alert('Must select an address for billing!');
+            }
+            else {
+
+
+                var card_no = document.getElementById("cc_number").value;
+                var name_on_card = document.getElementById("cc_name").value;
+                var exp_date = document.getElementById("cc_exp").value;
+                var type = document.getElementById("cc_type").value;
+                var address = abox.selectedOptions[0].value;
+
+                var callback =  $.ajax({
+                type: "POST",
+                url: "/add_credit_card",
+                data: JSON.stringify({
+                                    card_no:card_no,
+                                    name_on_card:name_on_card,
+                                    exp_date:exp_date,
+                                    type:type,
+                                    address:address}),
+                contentType: "text/json; charset=utf-8",
+                dataType: "text",
+                success: function (msg) {
+                    jQuery.getJSON('/get_credit_cards',populate_credit_cards);
+                alert(msg);
+              }
+          });
+            }
+
+
+
+    }
+
     function RemoveAddress() {
             abox = document.getElementById("address_box");
             selection = abox.selectedOptions[0].value;
-            address = addresses[selection];
-            var bn = address.building_no;
-            var direction = address.direction;
-            var street = address.street;
-            var city = address.city;
-            var state = address.state;
-            var country = address.country;
-            var zipcode = address.zipcode;
+
+
 
             var callback =  $.ajax({
             type: "POST",
             url: "/remove_address",
             data: JSON.stringify({
-                                building_number:bn,
-                                direction:direction,
-                                street:street,
-                                city:city,
-                                state:state,
-                                country:country,
-                                zipcode:zipcode}),
+                                address_id:selection}),
             contentType: "text/json; charset=utf-8",
             dataType: "text",
             success: function (msg) {
                 jQuery.getJSON('/get_addresses',populate_addresses);
+            alert(msg);
+          }
+      });
+
+    }
+
+    function RemoveCard() {
+            cbox = document.getElementById("card_box");
+            selection = cbox.selectedOptions[0].value;
+
+
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/remove_credit_card",
+            data: JSON.stringify({
+                                card_no:selection}),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+                jQuery.getJSON('/get_credit_cards',populate_credit_cards);
             alert(msg);
           }
       });
@@ -233,6 +323,36 @@
             alert(msg);
           }
       });
+    }
+
+    function ModifyCard() {
+
+            abox = document.getElementById("address_box");
+
+            if (abox.selectedOptions.length === 0) {
+                alert('Must select an address for billing!');
+            }
+            else {
+                cbox = document.getElementById("card_box");
+                var address = abox.selectedOptions[0].value;
+
+                var card_no = cbox.selectedOptions[0].value;
+
+
+                var callback =  $.ajax({
+                type: "POST",
+                url: "/modify_credit_card",
+                data: JSON.stringify({
+                                    card_no:card_no,
+                                    new_address:address}),
+                contentType: "text/json; charset=utf-8",
+                dataType: "text",
+                success: function (msg) {
+                    jQuery.getJSON('/get_credit_cards',populate_credit_cards);
+                alert(msg);
+              }
+          });
+            }
     }
 </script>
 

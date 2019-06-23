@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search/Book flights</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+
+<br><br>
+<div class = "flex-container register_user">
+    <ul class="cont">
+        <h2>Search Flights</h2>
+        <li class="fr">
+            <label >One Way  </label>
+            <input type="checkbox" id="roundtrip_chk" value=""><br>
+        </li>
+        <li class="fr">
+            <label >From  </label>
+            <input id = "from" type = "text" value = "">
+        </li>
+        <li class="fr">
+            <label >To     </label>
+            <input id = "to" type = "text" value = "">
+        </li>
+        <li class="fr">
+            <label >Depart      </label>
+            <input id = "depart" type = "date" value = "">
+        </li>
+
+        <li class="fr">
+            <label >Return   </label>
+            <input id = "return" type = "date" value = "">
+        </li>
+        <li class="fr">
+            <label >Max Price       </label>
+            <input id = "price_limit" type = "number" value = "">
+        </li>
+        <li class="fr">
+            <label >Max Flight Duration</label>
+            <input id = "duration_limit" type = "number" value = "">
+        </li>
+        <li class="fr">
+            <label >Max Connecting Flights</label>
+            <input id = "connection_limit" type = "number" value = "">
+        </li>
+        <button class = "btn btn-outline-primary button_options" onclick="Search()">Search</button>
+        <h4>Results</h4>
+
+        <li class="fr">
+            <select size = "5" id = "results_box">
+
+            </select>
+        </li>
+        <h4>Flights</h4>
+        <li class="fr">
+            <select size = "5" id = "flights_box">
+
+            </select>
+        </li>
+        <h4>Book</h4>
+        <li class="fr">
+            <label >Payment Card</label>
+            <select id = "card_box">
+
+            </select>
+        </li>
+
+        <button class = "btn btn-outline-primary button_options" onclick="Book()">Book</button>
+
+    </ul>
+
+
+
+</div>
+</body>
+</html>
