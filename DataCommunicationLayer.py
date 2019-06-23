@@ -162,7 +162,7 @@ class DataCommunicationLayer:
         else:
             return User(id,rows[0][1])
 
-    def search_flight(self, dep_airport,des_airport,dep_flight_date,connections = None ,max_time = None, price = None):
+    def search_flight(self, dep_airport,dep_flight_date,des_airport,connections = None ,max_time = None, price = None):
         cursor = self._db_conn.cursor()
         query = """WITH RECURSIVE ITINERARY(flight_code,dep,dest,connects,price,flight_time,arrival) AS (
                    SELECT flight_date::text || code || flight_no::text AS flight_code,
@@ -191,12 +191,12 @@ class DataCommunicationLayer:
                     FROM connections
                     WHERE dest = %s"""
         try:
-            cursor.execute(query, (dep_airport, des_airport, dep_flight_date, connections,max_time,price ))
+            cursor.execute(query, (dep_airport, dep_flight_date, dep_flight_date,des_airport, connections,max_time,price ))
             flights = cursor.fetchall()
             flights = [x for x in flights if x[3] <= float(connections) and float(x[4]) <= float(price) and (x[5].seconds <= float(max_time)*3600)]
 
         except Exception as error:
-                self.logger.error(error)
+            self._logger.error(error)
 
         if len(flights) == 0:
             self._logger.info("No flights found for given parameters.")
