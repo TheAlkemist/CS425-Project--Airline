@@ -94,7 +94,7 @@ CREATE TABLE Booking (
 CREATE TABLE BookedFlight (
     booking_no int,
     flight_no int,
-    primary key (booking_no),
+    primary key (booking_no,flight_no),
     foreign key (flight_no) references Flight
     );
 
