@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookings</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+
+<br><br>
+<div class = "flex-container register_user">
+    <h2>Bookings</h2>
+    <select size = "5" id = "bookings_box" onchange="bookings_box_click()"></select>
+    <h4>Flights</h4>
+    <select size = "5" id = "flights_box" ></select>
+    <br>
+    <button class = "btn btn-outline-primary button_options" onclick="Cancel()">Cancel</button>
+</div>
+
+
+<script>
+
+    jQuery.getJSON('/get_bookings',populate_bookings);
+    var bookings = {};
+
+    function populate_bookings(data) {
+        bookings = data;
+        abox = document.getElementById("bookings_box");
+        abox.innerHTML = "";
+
+        for(var i in data) {
+            booking = data[i]
+            opt = document.createElement("option");
+            abox.appendChild(opt);
+            opt.innerHTML = 'No. ' + booking['booking_no'] + ' Class ' + booking['flight_class'] + ' CC ' + booking['card_no'];
+        }
+
+    }
+
+    function bookings_box_click() {
+        cbox = document.getElementById("bookings_box");
+        sidx = cbox.selectedIndex;
+        console.log(bookings);
+        var key = Object.keys(bookings)[sidx];
+        flights = bookings[key]['flights']
+
+
+        cbox = document.getElementById("flights_box");
+        cbox.innerHTML = "";
+        for(var i in flights) {
+            fl = flights[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = 'No. ' + fl['flight_no'] + ' Carr. ' + fl['airline'] + ' From ' + fl['from'] +  ' Dept. ' + fl['depart'] + ' To ' + fl['to'] + ' Arr. ' + fl['arrive'] + ' Durr. ' + fl['duration'] + ' Cost ' + fl['price'];
+        }
+
+    }
+
+    function Cancel() {
+        cbox = document.getElementById("bookings_box");
+        if (cbox.selectedOptions.length === 0) {
+            alert('You must select a booking to cancel!');
+        }
+        else {
+            sidx = cbox.selectedIndex;
+            var key = Object.keys(bookings)[sidx];
+
+        }
+        var callback =  $.ajax({
+            type: "POST",
+            url: "/cancel_booking",
+            data: JSON.stringify({booking_no:key
+            }),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+
+                alert(msg);
+                jQuery.getJSON('/get_bookings',populate_bookings);
+                cbox = document.getElementById("flights_box");
+                cbox.innerHTML = "";
+          }
+      });
+
+    }
+
+
+</script>
+
+</body>
+</html>

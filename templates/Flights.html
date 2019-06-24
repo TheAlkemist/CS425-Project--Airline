@@ -15,8 +15,20 @@
     <ul class="cont">
         <h2>Search Flights</h2>
         <li class="fr">
-            <label >One Way  </label>
+            <label >Round Trip  </label>
             <input type="checkbox" id="roundtrip_chk" value=""><br>
+        </li>
+        <li class="fr">
+            <label >Sort By Price  </label>
+            <input type="radio" name = "sort" id="price_sort" value="" checked="checked"><br>
+        </li>
+        <li class="fr">
+            <label >Sort By Duration  </label>
+            <input type="radio" name = "sort" id="durr_sort" value=""><br>
+        </li>
+        <li class="fr">
+            <label >Skyline Query  </label>
+            <input type="checkbox" id="skyline_chk" value=""><br>
         </li>
         <li class="fr">
             <label >From  </label>
@@ -38,8 +50,8 @@
         <li class="fr">
             <label >Class   </label>
             <select  id = "class_select">
-                <option>Economy</option>
-                <option>Business</option>
+                <option>economy</option>
+                <option>first</option>
             </select>
         </li>
         <li class="fr">
@@ -47,24 +59,37 @@
             <input id = "price_limit" type = "number" value = "">
         </li>
         <li class="fr">
-            <label >Max Flight Duration</label>
+            <label >Max Flight Duration (Hours)</label>
             <input id = "duration_limit" type = "number" value = "">
         </li>
         <li class="fr">
             <label >Max Connecting Flights</label>
             <input id = "connection_limit" type = "number" value = "">
         </li>
-        <button class = "btn btn-outline-primary button_options" onclick="Search()">Search</button>
-        <h4>Results</h4>
+        <button class = "btn btn-outline-primary button_options" onclick="SearchFlights()">Search</button>
+        <h4>To Itineraries</h4>
 
         <li class="fr">
-            <select size = "5" id = "results_box">
+            <select size = "5" id = "to_results_box" onchange="to_itin_click()">
 
             </select>
         </li>
         <h4>Flights</h4>
         <li class="fr">
-            <select size = "5" id = "flights_box">
+            <select size = "5" id = "to_flights_box">
+
+            </select>
+        </li>
+        <h4>Return Itineraries</h4>
+
+        <li class="fr">
+            <select size = "5" id = "from_results_box" onchange="from_itin_click()">
+
+            </select>
+        </li>
+        <h4>Flights</h4>
+        <li class="fr">
+            <select size = "5" id = "from_flights_box">
 
             </select>
         </li>
@@ -76,12 +101,214 @@
             </select>
         </li>
 
-        <button class = "btn btn-outline-primary button_options" onclick="Book()">Book</button>
+        <button class = "btn btn-outline-primary button_options" onclick="book_flights()">Book</button>
 
     </ul>
 
 
 
 </div>
+
+<script>
+    jQuery.getJSON('/get_credit_cards',populate_credit_cards);
+
+    var to_itins;
+    var from_itins;
+
+
+    function SearchFlights() {
+
+            cbox = document.getElementById("class_select");
+            var flight_class = cbox.selectedOptions[0].value;
+
+            if (document.getElementById("price_sort").checked) {
+                var sort = "price";
+            }
+            else {
+                var sort = "duration";
+            }
+
+            var rtrn = document.getElementById("roundtrip_chk").checked
+            var skyline = document.getElementById("skyline_chk").checked
+
+            var from = document.getElementById("from").value;
+            var to = document.getElementById("to").value;
+            var depart = document.getElementById("depart").value;
+            var return_dt = document.getElementById("return").value;
+            var max_price = document.getElementById("price_limit").value;
+            var max_dur = document.getElementById("duration_limit").value;
+            var max_con = document.getElementById("connection_limit").value;
+
+
+            var callback =  $.ajax({
+            type: "POST",
+            url: "/search_flights",
+            data: JSON.stringify({sort:sort,
+                                    rtrn:rtrn,
+                                    flight_class:flight_class,
+                                    from:from,
+                                    to:to,
+                                    depart:depart,
+                                    return_dt:return_dt,
+                                    max_price:max_price,
+                                    max_dur:max_dur,
+                                    max_con:max_con,
+                                    skyline:skyline
+
+            }),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (data) {
+                data = JSON.parse(data);
+                if(data['success']){
+                    to_itins = data['to_itins'];
+                    from_itins = data['from_itins'];
+
+                    populate_itineraries_to();
+                    populate_itineraries_from();
+                    }
+                alert(data['msg']);
+          }
+      });
+
+    }
+
+
+    function populate_itineraries_to() {
+
+        cbox = document.getElementById("to_results_box");
+        cbox.innerHTML = "";
+
+        for(var i in to_itins) {
+            itin = to_itins[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = 'Dept. ' + itin['dept_time'] + ' Arr. ' + itin['arrival_time'] + ' Durr. ' + itin['duration'] + ' Cost ' + itin['cost'] + ' Flights ' + itin['connections'];
+        }
+
+    }
+
+    function to_itin_click() {
+        cbox = document.getElementById("to_results_box");
+        selection = cbox.selectedOptions[0].value;
+        sidx = cbox.selectedIndex;
+        flights = to_itins[sidx]['flights']
+
+
+        cbox = document.getElementById("to_flights_box");
+        cbox.innerHTML = "";
+        for(var i in flights) {
+            fl = flights[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = 'No. ' + fl['flight_no'] + ' Carr. ' + fl['airline'] + ' From ' + fl['from'] +  ' Dept. ' + fl['depart'] + ' To ' + fl['to'] + ' Arr. ' + fl['arrive'] + ' Durr. ' + fl['duration'] + ' Cost ' + fl['price'];
+        }
+
+    }
+
+    function populate_itineraries_from() {
+
+        cbox = document.getElementById("from_results_box");
+        cbox.innerHTML = "";
+
+        for(var i in from_itins) {
+            itin = from_itins[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = 'Dept. ' + itin['dept_time'] + ' Arr. ' + itin['arrival_time'] + ' Durr. ' + itin['duration'] + ' Cost ' + itin['cost'] + ' Flights ' + itin['connections'];
+        }
+
+    }
+
+    function from_itin_click() {
+        cbox = document.getElementById("from_results_box");
+        selection = cbox.selectedOptions[0].value;
+        sidx = cbox.selectedIndex;
+        flights = from_itins[sidx]['flights']
+
+
+        cbox = document.getElementById("from_flights_box");
+        cbox.innerHTML = "";
+        for(var i in flights) {
+            fl = flights[i]
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = 'No. ' + fl['flight_no'] + ' Carr. ' + fl['airline'] + ' From ' + fl['from'] +  ' Dept. ' + fl['depart'] + ' To ' + fl['to'] + ' Arr. ' + fl['arrive'] + ' Durr. ' + fl['duration'] + ' Cost ' + fl['price'];
+        }
+
+    }
+
+    function populate_credit_cards(data) {
+
+        cards = data;
+        cbox = document.getElementById("card_box");
+        cbox.innerHTML = "";
+
+        for(var i in data) {
+            card = data[i];
+            opt = document.createElement("option");
+            cbox.appendChild(opt);
+            opt.innerHTML = card['card_no'];
+        }
+
+    }
+
+    function book_flights() {
+        cbox = document.getElementById("card_box");
+        to_box = document.getElementById("to_results_box");
+        return_box = document.getElementById("from_results_box");
+
+        if (cbox.selectedOptions.length === 0) {
+            alert('A valid credit card must be selected!');
+            return 0;
+        }
+        else if (to_box.selectedOptions.length === 0) {
+            alert('Cant book without a to itinerary!');
+            return 0;
+        }
+        else if (return_box.selectedOptions.length === 0 && document.getElementById("roundtrip_chk").checked) {
+            alert('Cant book without a from itinerary for a roundtrip option!');
+            return 0;
+        }
+
+        var card_no = cbox.selectedOptions[0].value;
+        var to_idx = to_box.selectedIndex;
+        var to_flights = to_itins[to_idx]['flights'];
+
+        if (return_box.selectedOptions.length > 0) {
+            var from_idx = return_box.selectedIndex;
+            var from_flights = from_itins[from_idx]['flights'];
+        }
+        else {
+            var from_flights = [];
+
+        }
+        fcbox = document.getElementById("class_select");
+        var flight_class = fcbox.selectedOptions[0].value;
+
+        var callback =  $.ajax({
+            type: "POST",
+            url: "/add_booking",
+            data: JSON.stringify({card_no:card_no,
+                                    to_flights:to_flights,
+                                    from_flights:from_flights,
+                                    flight_class:flight_class
+            }),
+            contentType: "text/json; charset=utf-8",
+            dataType: "text",
+            success: function (msg) {
+
+                alert(msg);
+          }
+      });
+
+    }
+
+
+</script>
+
+
+
+
 </body>
 </html>

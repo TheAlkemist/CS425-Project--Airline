@@ -82,15 +82,20 @@ CREATE TABLE Price (
     );
 
 CREATE TABLE Booking (
-    booking_no bigint,
+    booking_no serial,
     email varchar(50) not null,
-    flight_no int not null,
     flight_class varchar(10) not null,
     card_no bigint not null,
     primary key (booking_no),
     foreign key (email) references Customer,
-    foreign key (flight_no,flight_class) references Price,
     foreign key (card_no) references Credit_Card
+    );
+
+CREATE TABLE BookedFlight (
+    booking_no int,
+    flight_no int,
+    primary key (booking_no),
+    foreign key (flight_no) references Flight
     );
 
 CREATE TABLE Mileage_Program (

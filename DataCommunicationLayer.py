@@ -1,7 +1,7 @@
 import psycopg2 as pg
 from werkzeug.security import generate_password_hash
 from User import User, salt
-from FlightSearch import Flight, Airport
+from FlightSearch import Flight, Airport,search_flights
 
 db_host = "localhost"
 database = "airfare"
@@ -161,10 +161,10 @@ class DataCommunicationLayer:
             return None
         else:
             return User(id,rows[0][1])
-
+    """
     def search_flight(self, dep_airport,dep_flight_date,des_airport,connections = None ,max_time = None, price = None):
         cursor = self._db_conn.cursor()
-        query = """WITH RECURSIVE ITINERARY(flight_code,dep,dest,connects,price,flight_time,arrival) AS (
+        query = WITH RECURSIVE ITINERARY(flight_code,dep,dest,connects,price,flight_time,arrival) AS (
                    SELECT flight_date::text || code || flight_no::text AS flight_code,
                    dept_airport,
                    arrival_airport,
@@ -189,7 +189,7 @@ class DataCommunicationLayer:
                     )
                     SELECT *
                     FROM connections
-                    WHERE dest = %s"""
+                    WHERE dest = %s
         try:
             cursor.execute(query, (dep_airport, dep_flight_date, dep_flight_date,des_airport, connections,max_time,price ))
             flights = cursor.fetchall()
@@ -202,16 +202,16 @@ class DataCommunicationLayer:
             self._logger.info("No flights found for given parameters.")
             return False
 
-        self._logger.info("""\nDisplaying flight options in the following format:
-        [i]: <# of connections>, $<airfare>, <total airtime> hrs 
-        """)
+        self._logger.info(\nDisplaying flight options in the following format:
+        [i]: <# of connections>, $<airfare>, <total airtime> hrs
+        )
 
         i, j = 0, 0
         for itin in flights:
             self._logger.info("        [{}]: {}, ${}, {:.3g} hrs".format(i, itin[3], float(itin[4]), (itin[5].seconds)/3600))
             i +=1
         return True
-
+    """
     def get_addresses_for_user(self,user_id):
         cursor = self._db_conn.cursor()
         sql = """select *
@@ -483,14 +483,115 @@ class DataCommunicationLayer:
         finally:
             return success,msg
 
+
+
+    def add_booking(self, email,flight_class, card_no,flights):
+        success = True
+        cursor = self._db_conn.cursor()
+
+        booking_no = 0
+
+        try:
+            values = cursor.mogrify("(%s,%s,%s)", (email,flight_class, card_no)).decode('utf-8')
+            cursor.execute('insert into booking (email,flight_class,card_no) values ' + values)
+
+            cursor.execute('select max(booking_no) from booking')
+            for row in cursor:
+                booking_no = row[0]
+
+            for flight_no in flights:
+                values = cursor.mogrify("(%s,%s)", (booking_no, flight_no)).decode('utf-8')
+                cursor.execute('insert into bookedflight values ' + values)
+
+            self._db_conn.commit()
+            self._logger.info('Successfully inserted booking_no %s for email %s into the Database.' % (
+                booking_no, email))
+        except Exception as e:
+            self._logger.error(e)
+            self._db_conn.rollback()
+            success = False
+        finally:
+            cursor.close()
+            return success
+
+    def get_bookings(self,user_id):
+        cursor = self._db_conn.cursor()
+        sql = """
+            select booking_no,flight_class,card_no
+            from booking
+            where email = %(email)s
+        """
+        sql2 = """
+            select bkg.booking_no, fl.flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,price
+            from flight fl
+                JOIN price pr on fl.flight_no = pr.flight_no
+                JOIN booking bkg on bkg.flight_class = pr.flight_class
+                JOIN bookedflight bf on bf.flight_no = fl.flight_no and bkg.booking_no = bf.booking_no
+            where email = %(email)s
+        """
+
+        info = {}
+        try:
+            cursor.execute(sql, {'email': user_id})
+            for row in cursor:
+                info[row[0]]={'booking_no':row[0],'flight_class':row[1],'card_no':row[2],'flights': []}
+            cursor.execute(sql2, {'email': user_id})
+            for row in cursor:
+                booking_no = row[0]
+                flight_no = row[1]
+                code = row[2]
+                dept_airport = row[3]
+                arrival_airport = row[4]
+                dept_time = row[6]
+                arrival_time = row[7]
+                price = row[8]
+                flight = Flight(flight_no, code, dept_airport, arrival_airport, dept_time, arrival_time, price)
+                info[booking_no]['flights'].append(flight.to_dict())
+
+        except Exception as e:
+            self._logger.error(e)
+            self._db_conn.rollback()
+        finally:
+            return info
+
+    def remove_booking(self,booking_no):
+        cursor = self._db_conn.cursor()
+        success = True
+        try:
+            cursor.execute('delete from bookedflight where booking_no = %(booking_no)s', {'booking_no': booking_no})
+            cursor.execute('delete from booking where booking_no = %(booking_no)s', {'booking_no': booking_no})
+            self._db_conn.commit()
+            self._logger.info('Successfully canceled booking_no %s.' % (
+                booking_no))
+
+        except Exception as e:
+            self._logger.error(e)
+            self._db_conn.rollback()
+            success = False
+
+        finally:
+            cursor.close()
+            return success
+
+    #Get all flights that are not full
     def get_all_flights(self,flight_class,flight_date):
         sql = """
-            select flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,price
-            from flights f
+
+            with bkg as (select flight_no
+                            ,count(*) as n_pass
+                            from booking bb, bookedflight bf
+                            where flight_class = %(flight_class)s
+                            and bb.booking_no = bf.booking_no
+                            group by flight_no)
+
+            select f.flight_no,code,dept_airport,arrival_airport,flight_date,dept_time,arrival_time,price
+            from flight f
                 JOIN price pr on f.flight_no = pr.flight_no
+                LEFT JOIN bkg on bkg.flight_no = f.flight_no
             where
             pr.flight_class = %(flight_class)s
-            and pr.flight_date >= %(flight_date)s
+            and f.flight_date >= %(flight_date)s
+            and (case when pr.flight_class = 'economy' then f.economy_class_capacity else f.first_class_capacity end) > coalesce(bkg.n_pass,0)
 
 
         """
@@ -528,3 +629,36 @@ class DataCommunicationLayer:
             network[flight.frm].add_flight(flight)
 
         return network
+
+    def get_itineraries(self,flight_class,depart,frm,to,rtrn = None,max_duration = None,max_price = None,max_connections=None,skyline=False):
+        network = self.get_network_graph(flight_class,depart)
+        to_itins = []
+        from_itins =[]
+        if frm in network and to  in network:
+            to_itins = search_flights(network,depart,frm,to,max_price = max_price,max_connections=max_connections,max_duration=max_duration)
+            if rtrn is not None:
+                from_itins = search_flights(network,rtrn,to,frm,max_price = max_price,max_connections=max_connections,max_duration=max_duration)
+
+        if skyline:
+            to_itins = self.get_sky_line(to_itins)
+            from_itins = self.get_sky_line(from_itins)
+
+        return to_itins, from_itins
+
+    def get_sky_line(self,itineraries):
+        best_price = None
+        shortest = None
+
+        tmp = []
+
+        for itin in itineraries:
+            if best_price is None or itin.total_price < best_price:
+                best_price = itin.total_price
+            if shortest is None or itin.duration < shortest:
+                shortest = itin.duration
+
+        for itin in itineraries:
+            if itin.total_price == best_price or itin.duration == shortest:
+                tmp.append(itin)
+
+        return tmp
