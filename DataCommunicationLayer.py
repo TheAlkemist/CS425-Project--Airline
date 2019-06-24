@@ -646,19 +646,16 @@ class DataCommunicationLayer:
         return to_itins, from_itins
 
     def get_sky_line(self,itineraries):
-        best_price = None
-        shortest = None
-
+        itineraries.sort(key = lambda var: var.total_price)
         tmp = []
 
-        for itin in itineraries:
-            if best_price is None or itin.total_price < best_price:
-                best_price = itin.total_price
-            if shortest is None or itin.duration < shortest:
-                shortest = itin.duration
 
         for itin in itineraries:
-            if itin.total_price == best_price or itin.duration == shortest:
+            if len(tmp) == 0 or (itin.total_price > tmp[-1].total_price and itin.duration < tmp[-1].duration) or (itin.total_price == tmp[-1].total_price and itin.duration == tmp[-1].duration):
+                tmp.append(itin)
+            elif itin.total_price == tmp[-1].total_price and itin.duration < tmp[-1].duration:
+                while len(tmp) > 0 and itin.total_price == tmp[-1].total_price and itin.duration < tmp[-1].duration:
+                    tmp.pop(-1)
                 tmp.append(itin)
 
         return tmp
