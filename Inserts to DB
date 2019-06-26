@@ -52,6 +52,40 @@ insert into Flight
     ('212','55','CAG','AMS','2019-07-12',timestamp '2019-07-12 18:25',timestamp '2019-07-12 21:10','10','50'),
     ('215','55','CAG','KAG','2019-07-12',timestamp '2019-07-12 13:05',timestamp '2019-07-12 23:27','10','50');
 
+insert into Price
+    values
+	('2899','first','565'),
+	('3575','first','1565'),('3598','first','765'),
+    ('3771','first','465'),('4786','first','865'),('4899','first','565'),('5575','first','1565'),
+    ('5384','first','932'),('5598','first','1932'),('5771','first','732'),('384','first','832'),
+    ('444','first','1932'),('595','first','1232'),('584','first','273'),('664','first','573'),
+    ('665','first','473'),('210','first','1073'),('212','first','1173'),('215','first','1273'),
+    ('2786','first','999'),('2899','economy','365'),('3575','economy','1065'),('3598','economy','365'),
+    ('3771','economy','265'),('4786','economy','565'), ('4899','economy','365'),('5575','economy','1065'),
+    ('5384','economy','532'),('5598','economy','1232'),('5771','economy','432'),('384','economy','432'),
+    ('444','economy','1032'),('595','economy','1032'),('584','economy','173'),('664','economy','373'),
+    ('665','economy','373'),('210','economy','573'),('212','economy','673'),('215','economy','1873'),
+    ('2786','economy','675');
+
+
+----------------------------------  You really only need the above to test as you have to register a new user
+---------------------------------- to go through the process correctly
+
+insert into Address
+    values('900 n Michigan ave','N','Michigan Ave','Chicago','US','IL','900','60610'),
+    ('6464 w Irving Park rd','W','Irving Park Road','New York','US','NY','6464','77712'),
+    ('3626 n Pulaski','N','Pulaski','Queensland','Australia','Queensland','3626','55511'),
+    ('111 n State st','N','State Street','Chicago','US','IL','111','60611'),
+    ('555 w Washington','W','Washington','NY','US','NY','555','77707'),
+    ('810 n Chicago ave','N','Chicago Ave','Sardinia','Italy','Sardinia','810','11322'),
+    ('3212 n State st','N','State Street','Austin','US','TX','3212','55515'),
+    ('2000 n Clybourn ave','N','Clybourn Ave','Jilin','China','Jilin','2000','70100'),
+    ('1733 n Damen ave','N','Damen Ave','Western Australia','Australia','Western Australia','1733','53501'),
+    ('3181 n Broadway','N','Broadway','Chicago','US','IL','3181','60611'),
+    ('316 n Michigan ave','N','Michigan Ave','City','US','MD','316','60611'),
+    ('610 w Diversey pkwy','W','Diversey Parkway','Miami','US','FL','610','71705'),
+    ('3312 n western ave','N','Western Ave','Manama','Bahrain','Manama','3312','77211'),
+    ('525 w Monroe st','W','Monroe Street','Aquitaine','France','Aquitaine','525','81792');
 
 insert into Customer
     values ('asharp@gmail.com','Al','Sharpton','LAX'),
@@ -87,26 +121,9 @@ insert into Customer_Address
     ('everywhere@gmail.com','316 n Michigan ave'),
     ('dalama@yahoo.com','610 w Diversey pkwy'),
     ('maggiethat@yahoo.com','3312 n western ave'),
-    ('cdg@gmail.com','525 w Monroe st'),
-    ('kim.sung@gmail.com','3811 n Southport ave'),
-    ('qshihuang@gmail.com','5636 w Irving Park rd'),
-    ('h.salassie@yahoo.com','2200 n Lincoln ave');
+    ('cdg@gmail.com','525 w Monroe st');
 
-insert into Address
-    values('900 n Michigan ave','N','Michigan Ave','Chicago','US','IL','900','60610'),
-    ('6464 w Irving Park rd','W','Irving Park Road','New York','US','NY','6464','77712'),
-    ('3626 n Pulaski','N','Pulaski','Queensland','Australia','Queensland','3626','55511'),
-    ('111 n State st','N','State Street','Chicago','US','IL','111','60611'),
-    ('555 w Washington','W','Washington','NY','US','NY','555','77707'),
-    ('810 n Chicago ave','N','Chicago Ave','Sardinia','Italy','Sardinia','810','11322'),
-    ('3212 n State st','N','State Street','Austin','US','TX','3212','55515'),
-    ('2000 n Clybourn ave','N','Clybourn Ave','Jilin','China','Jilin','2000','70100'),
-    ('1733 n Damen ave','N','Damen Ave','Western Australia','Australia','Western Australia','1733','53501'),
-    ('3181 n Broadway','N','Broadway','Chicago','US','IL','3181','60611'),
-    ('316 n Michigan ave','N','Michigan Ave','City','US','MD','316','60611'),
-    ('610 w Diversey pkwy','W','Diversey Parkway','Miami','US','FL','610','71705'),
-    ('3312 n western ave','N','Western Ave','Manama','Bahrain','Manama','3312','77211'),
-    ('525 w Monroe st','W','Monroe Street','Aquitaine','France','Aquitaine','525','81792');
+
 
 
 
@@ -127,20 +144,7 @@ insert into Credit_Card
 		('1234567890123073','3626 n Pulaski','2024-04-04','mastercard','Genghis Khan'),
         ('1234567890123444','111 n State st','2021-04-04','mastercard','Dalai Lama');
 
-insert into Price
-    values
-	('2899','first','565'),
-	('3575','first','1565'),('3598','first','765'),
-    ('3771','first','465'),('4786','first','865'),('4899','first','565'),('5575','first','1565'),
-    ('5384','first','932'),('5598','first','1932'),('5771','first','732'),('384','first','832'),
-    ('444','first','1932'),('595','first','1232'),('584','first','273'),('664','first','573'),
-    ('665','first','473'),('210','first','1073'),('212','first','1173'),('215','first','1273'),
-    ('2786','first','999'),('2899','economy','365'),('3575','economy','1065'),('3598','economy','365'),
-    ('3771','economy','265'),('4786','economy','565'), ('4899','economy','365'),('5575','economy','1065'),
-    ('5384','economy','532'),('5598','economy','1232'),('5771','economy','432'),('384','economy','432'),
-    ('444','economy','1032'),('595','economy','1032'),('584','economy','173'),('664','economy','373'),
-    ('665','economy','373'),('210','economy','573'),('212','economy','673'),('215','economy','1873'),
-    ('2786','economy','675');
+
 
 insert into Booking
 
@@ -165,19 +169,7 @@ insert into Mileage_Program
     ('thegreenspan@gmail.com','944'),
     ('bigo@oprah.com','498'),('gates.bill@yahoo.com','5493'),('tfoxxy@gmail.com','473');
 
-insert into public.registered_user
-    values('abelinc@aol.com','one'),('a1gogo@gmail.com','two'),('thegreenspan@gmail.com','three'),
-('bigo@oprah.com','four'),('gates.bill@yahoo.com','five'),
-('tfoxxy@gmail.com','six'),('presbush@gmail.com','seven'),('zeze@yahoo.com','eight'),
-('peacenelson@yahoo.com','nine'),
-('doubler@gmail.com','ten'),
-('everywhere@gmail.com','elevn'),
-('dalama@yahoo.com','twelve'),
-('maggiethat@yahoo.com','thirteen'),
-('cdg@gmail.com','fourteen'),
-('kim.sung@gmail.com','fift'),
-('qshihuang@gmail.com','sixt'),
-('h.salassie@yahoo.com','sevent');
+
 
 
 

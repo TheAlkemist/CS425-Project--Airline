@@ -28,6 +28,12 @@ CREATE TABLE Flight (
     foreign key (arrival_airport) references Airport
     );
 
+CREATE INDEX flight_code_idx on Flight(code);
+CREATE INDEX flight_date_idx on Flight(flight_date);
+CREATE INDEX flight_dept_airport_idx on Flight(dept_airport);
+CREATE INDEX flight_arrival_airport_idx on Flight(arrival_airport);
+
+
 CREATE TABLE Customer (
     email varchar(50),
     first_name varchar(50) not null,
@@ -35,13 +41,7 @@ CREATE TABLE Customer (
     home_airport varchar(80),
     primary key (email),
     foreign key (home_airport) references Airport
-    );
-
-CREATE TABLE Customer_Address (
-    email varchar(50),
-    address varchar(50),
-    primary key (email,address),
-    foreign key (email) references Customer
+        on delete set null
     );
 
 CREATE TABLE Address (
@@ -56,6 +56,17 @@ CREATE TABLE Address (
     primary key (address)
     );
 
+CREATE TABLE Customer_Address (
+    email varchar(50),
+    address varchar(50),
+    primary key (email,address),
+    foreign key (email) references Customer
+        on delete cascade,
+    foreign key (address) references Address
+        on delete cascade
+        on update cascade
+    );
+
 CREATE TABLE Credit_Card (
     card_no bigint,
     address varchar(50) not null,
@@ -66,20 +77,29 @@ CREATE TABLE Credit_Card (
 	foreign key (address) references Address
     );
 
+CREATE INDEX credit_card_address_idx on Credit_Card(address);
+CREATE INDEX credit_type_idx on Credit_Card(type);
+
 CREATE TABLE Customer_Credit_Card (
     email varchar(50),
     card_no bigint,
     primary key (email,card_no),
-    foreign key (email) references Customer,
+    foreign key (email) references Customer
+        on delete cascade,
     foreign key (card_no) references Credit_Card
+        on delete cascade
     );
 
 CREATE TABLE Price (
     flight_no int,
-    flight_class varchar(10),
+    flight_class varchar(10), check (flight_class in ('economy','first')),
     Price numeric(8,2) not null,
-    primary key (flight_no,flight_class)
+    primary key (flight_no,flight_class),
+    foreign key (flight_no) references Flight
+        on delete cascade
     );
+
+CREATE INDEX flight_price_idx on Price(flight_no);
 
 CREATE TABLE Booking (
     booking_no serial,
@@ -91,12 +111,17 @@ CREATE TABLE Booking (
     foreign key (card_no) references Credit_Card
     );
 
+CREATE INDEX booking_email_idx on Booking(email);
+CREATE INDEX booking_card_no_idx on Booking(card_no);
+
 CREATE TABLE BookedFlight (
     booking_no int,
     flight_no int,
     primary key (booking_no,flight_no),
     foreign key (flight_no) references Flight
     );
+
+CREATE INDEX booked_flight_no_idx on BookedFlight(flight_no);
 
 CREATE TABLE Mileage_Program (
     email varchar(50),
