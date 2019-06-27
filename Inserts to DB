@@ -14,7 +14,7 @@ insert into Airport
 		('CAG','Italy','Sardinia'),
 		('CAQ','Colombia','Caucasia'),
 		('CBC','Australia','Western Australia'),('CBE','US','MD'),('CBF','US','IA'),('CCN','Afghanistan','Chaghcharan'),
-		('CDV','US','AK'),('CFO','Brazil','Mato Grosso'),('CGO','China','Jilin'),('AKV','Canada','Quebec');
+		('CDV','US','AK'),('CFO','Brazil','Mato Grosso'),('CGO','China','Jilin'),('AKV','Canada','Quebec'),('HND','Japan','Tokyo District');
 
 
 insert into Airline
@@ -37,6 +37,11 @@ insert into Flight
     ('4899','01','LGA','AAC','2019-06-27',timestamp '2019-06-27 13:20',
     timestamp '2019-06-27 20:50','14','70'),
     ('5575','01','LAX','ORD','2019-06-27',timestamp '2019-06-27 10:38',timestamp '2019-06-27 13:15','8','44'),
+    ('5543','01','LAX','LGA','2019-06-27',timestamp '2019-06-27 10:35',timestamp '2019-06-27 16:55','8','44'),
+    ('5643','01','LGA','CBC','2019-06-27',timestamp '2019-06-27 17:35',timestamp '2019-06-28 09:55','8','44'),
+    ('6743','01','LAX','CBC','2019-06-27',timestamp '2019-06-27 13:35',timestamp '2019-06-28 09:56','8','44'),
+    ('1231','01','LAX','HND','2019-06-27',timestamp '2019-06-27 13:10',timestamp '2019-06-28 09:10','8','44'),
+    ('5309','01','HND','CBC','2019-06-28',timestamp '2019-06-28 13:10',timestamp '2019-06-28 17:10','8','44'),
     ('5384','01','ORD','LAX','2019-07-07',timestamp '2019-07-07 11:06',timestamp '2019-07-07 17:19','18','60'),
     ('5598','01','ORD','MIA','2019-06-27',timestamp '2019-06-27 14:45',timestamp '2019-06-27 18:18','0','30'),
     ('5771','01','MIA','CBC','2019-06-27',timestamp '2019-06-27 23:12',timestamp '2019-06-28 8:10','14','50'),
@@ -65,7 +70,8 @@ insert into Price
     ('5384','economy','532'),('5598','economy','1232'),('5771','economy','432'),('384','economy','432'),
     ('444','economy','1032'),('595','economy','1032'),('584','economy','173'),('664','economy','373'),
     ('665','economy','373'),('210','economy','573'),('212','economy','673'),('215','economy','1873'),
-    ('2786','economy','675');
+    ('2786','economy','675'),('5543','economy','356'),('5643','economy','2000'),('5543','first','1356'),('5643','first','4000'),
+    ('6743','economy','4300'),('6743','first','7980'),('1231','economy','1100'),('5309','economy','1000');
 
 
 ----------------------------------  You really only need the above to test as you have to register a new user

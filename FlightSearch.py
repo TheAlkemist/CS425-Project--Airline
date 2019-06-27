@@ -128,13 +128,8 @@ def search_flights(network,dept_date,from_iata,to_iata,max_price = None,max_conn
     start = network[from_iata]
     complete_itineraries = []
 
-    #prepopulate itineraries
-    for flight in start.get_flights(dept_date, max_price):
-        itinerary = Itinerary(from_iata,to_iata)
-        if from_iata not in itinerary_by_last_loc:
-            itinerary_by_last_loc[from_iata] = []
-        itinerary_by_last_loc[from_iata].append(itinerary)
-
+    itinerary = Itinerary(from_iata, to_iata)
+    itinerary_by_last_loc[from_iata] = [itinerary]
 
     locations.append(start)
 
